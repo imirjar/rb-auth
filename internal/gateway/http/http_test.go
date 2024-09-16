@@ -10,16 +10,8 @@ import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
-	"github.com/imirjar/rb-auth/internal/entity/models"
+	"github.com/imirjar/rb-auth/internal/models"
 )
-
-type sent struct {
-	user models.User
-}
-
-type resp struct {
-	status uint
-}
 
 func TestNew(t *testing.T) {
 	tests := []struct {
@@ -44,21 +36,31 @@ func TestNew(t *testing.T) {
 }
 
 func TestLogIn(t *testing.T) {
+	type expected struct {
+		token  models.JWT
+		status uint
+	}
 
 	tests := []struct {
 		name     string
 		user     models.User
-		expected resp
+		expected expected
 	}{
 		{
-			name:     "ok",
-			user:     models.User{Login: "login", Password: "password"},
-			expected: resp{status: http.StatusOK},
+			name: "ok",
+			user: models.User{Login: "login", Password: "password"},
+			expected: expected{
+				status: http.StatusOK,
+				token:  models.JWT{},
+			},
 		},
 		{
-			name:     "not valid",
-			user:     models.User{Login: "login"},
-			expected: resp{status: http.StatusBadRequest},
+			name: "not valid",
+			user: models.User{Login: "login"},
+			expected: expected{
+				status: http.StatusBadRequest,
+				token:  models.JWT{},
+			},
 		},
 		// {
 		// 	name:     "not valid",
@@ -80,12 +82,12 @@ func TestLogIn(t *testing.T) {
 	// mockService.EXPECT().Authenticate(gomock.Any(), models.User{Login: "NO", Password: "NO"}).Return(models.User{}, errors.New("not found"))
 	first := mockService.EXPECT().
 		Authenticate(gomock.Any(), models.User{Login: "Wrong", Password: "User"}).
-		Return(models.User{Login: "login", Password: "password"}, nil).
+		Return(models.JWT{Payload: models.Claims{UserID: 1}}, nil).
 		MaxTimes(1)
 
 	second := mockService.EXPECT().
 		Authenticate(gomock.Any(), gomock.Any()).
-		Return(models.User{Login: "login", Password: "password"}, nil).
+		Return(models.JWT{Payload: models.Claims{UserID: 1}}, nil).
 		MaxTimes(1)
 
 	gomock.InOrder(

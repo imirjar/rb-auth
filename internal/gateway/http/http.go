@@ -7,12 +7,11 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/imirjar/rb-auth/internal/entity/models"
+	"github.com/imirjar/rb-auth/internal/models"
 )
 
 type Service interface {
-	Authenticate(context.Context, models.User) (models.User, error)
-	Authorize(context.Context, models.User)
+	Authenticate(context.Context, models.User) (models.JWT, error)
 	Registrate(context.Context, models.User) error
 }
 
@@ -87,7 +86,7 @@ func (s *HTTPServer) LogIn() http.HandlerFunc {
 
 		log.Println(user)
 
-		authUser, err := s.Service.Authenticate(r.Context(), user)
+		token, err := s.Service.Authenticate(r.Context(), user)
 		// if user isn't exist
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusForbidden)
@@ -95,7 +94,7 @@ func (s *HTTPServer) LogIn() http.HandlerFunc {
 		}
 
 		// response
-		if err = json.NewEncoder(w).Encode(authUser); err != nil {
+		if err = json.NewEncoder(w).Encode(token); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

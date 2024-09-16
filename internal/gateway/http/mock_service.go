@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	models "github.com/imirjar/rb-auth/internal/entity/models"
+	models "github.com/imirjar/rb-auth/internal/models"
 )
 
 // MockService is a mock of Service interface.
@@ -36,10 +36,10 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 }
 
 // Authenticate mocks base method.
-func (m *MockService) Authenticate(arg0 context.Context, arg1 models.User) (models.User, error) {
+func (m *MockService) Authenticate(arg0 context.Context, arg1 models.User) (models.JWT, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Authenticate", arg0, arg1)
-	ret0, _ := ret[0].(models.User)
+	ret0, _ := ret[0].(models.JWT)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -48,18 +48,6 @@ func (m *MockService) Authenticate(arg0 context.Context, arg1 models.User) (mode
 func (mr *MockServiceMockRecorder) Authenticate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Authenticate", reflect.TypeOf((*MockService)(nil).Authenticate), arg0, arg1)
-}
-
-// Authorize mocks base method.
-func (m *MockService) Authorize(arg0 context.Context, arg1 models.User) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Authorize", arg0, arg1)
-}
-
-// Authorize indicates an expected call of Authorize.
-func (mr *MockServiceMockRecorder) Authorize(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Authorize", reflect.TypeOf((*MockService)(nil).Authorize), arg0, arg1)
 }
 
 // Registrate mocks base method.

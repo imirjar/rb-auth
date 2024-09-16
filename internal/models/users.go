@@ -1,7 +1,7 @@
 package models
 
 type User struct {
-	ID       string
+	ID       int
 	Name     string
 	Login    string `json:"login"`
 	Password string `json:"password"`
@@ -23,24 +23,4 @@ func (u *User) HasRole(rname string) bool {
 		}
 	}
 	return false
-}
-
-type Group struct {
-	ID    string
-	Name  string
-	Roles []*Role
-}
-
-func (g *Group) HasRole(rname string) bool {
-	for _, i := range g.Roles {
-		if i.Name == rname {
-			return true
-		}
-	}
-	return false
-}
-
-type Role struct {
-	ID   string
-	Name string
 }

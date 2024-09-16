@@ -3,7 +3,7 @@ package storage
 import (
 	"log"
 
-	"github.com/imirjar/rb-auth/internal/entity/models"
+	"github.com/imirjar/rb-auth/internal/models"
 )
 
 func New() (*storage, error) {
@@ -39,9 +39,3 @@ func (s *storage) GetUser(login string) (models.User, error) {
 	}
 
 }
-
-func (s *storage) AddSession()    {}
-func (s *storage) DeleteSession() {}
-
-func (s *storage) AddRole()  {}
-func (s *storage) AddGroup() {}

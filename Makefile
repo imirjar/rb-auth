@@ -1,6 +1,6 @@
 include .env
 
-.PHONY: run build
+.PHONY: run build test
 
 APP_FILE=cmd/main.go
 
@@ -12,3 +12,6 @@ build:
 
 build_and_run: build
 	./bin/rb_auth
+
+test: 
+	go test ./...

@@ -1,10 +1,18 @@
 ![RB_Auth](docs/img/rb_auth.jpg)
 
-Authentification server. Powered by reDBeaver
-
 
 # About app
 
+Authentification server. Powered by reDBeaver
+
+### Running app
+Install golang from page https://go.dev/doc/install
+
+```bash 
+make build_and_run
+```
+
+# App layers:
 RB_AUTH app consists of 3 layers:
 1) Gateway - layer of http/grpc/mpq connection
 2) Service - provides authentication/authorization/reagistration logic
@@ -32,10 +40,9 @@ You can make your custom connection, witch realize internal/service/service.go -
 For good tests we are using mockgen util
 
 ```bash 
-!!
-
 mockgen -destination=internal/gateway/http/mock_service.go -package=http github.com/imirjar/rb-auth/internal/gateway/http Service
 ```
-
-#### 1.2
-#### 1.3
+#### 1.2 Run tests
+```
+make test
+```
