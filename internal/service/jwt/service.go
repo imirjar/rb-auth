@@ -7,21 +7,28 @@ import (
 	models "github.com/imirjar/rb-auth/internal/entity/models"
 )
 
-// type iStorage interface{
-
-// }
+type storage interface {
+	AddUser(models.User) error
+	GetUser(string) (models.User, error)
+}
 
 // Service layer realize authorization, register and authentication methods
 type service struct {
-	// storage iStorage
+	Storage storage
 }
 
 // return JWT token
-func (s *service) Authenticate(ctx context.Context, user models.User) {
-	log.Printf("Authenticate: %s", user.ID)
+func (s *service) Authenticate(ctx context.Context, user models.User) (models.User, error) {
+	return s.Storage.GetUser(user.Login)
 }
-func (s *service) Registrate(ctx context.Context, user models.User) {
+func (s *service) Registrate(ctx context.Context, user models.User) error {
+	err := s.Storage.AddUser(user)
+	if err != nil {
+		log.Print(err)
+		return err
+	}
 	log.Printf("Registrate: %s", user.ID)
+	return nil
 }
 func (s *service) Authorize(ctx context.Context, user models.User) {
 	log.Printf("Authorize: %s", user.ID)

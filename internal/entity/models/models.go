@@ -1,10 +1,19 @@
 package models
 
 type User struct {
-	ID     string `json:"id"`
-	Name   string
-	Roles  []*Role
-	Groups []*Group
+	ID       string
+	Name     string
+	Login    string `json:"login"`
+	Password string `json:"password"`
+	Roles    []*Role
+	Groups   []*Group
+}
+
+func (u *User) IsValid() bool {
+	if u.Login == "" || u.Password == "" {
+		return false
+	}
+	return true
 }
 
 func (u *User) HasRole(rname string) bool {
