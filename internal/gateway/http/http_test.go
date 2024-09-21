@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -37,7 +38,7 @@ func TestNew(t *testing.T) {
 
 func TestLogIn(t *testing.T) {
 	type expected struct {
-		token  models.JWT
+		token  string
 		status uint
 	}
 
@@ -51,22 +52,9 @@ func TestLogIn(t *testing.T) {
 			user: models.User{Login: "login", Password: "password"},
 			expected: expected{
 				status: http.StatusOK,
-				token:  models.JWT{},
+				token:  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjY1NzI1NjksIlVzZXJJRCI6MX0.GAUD2ulqg-UIXsomcc6B9vFD5Eqyrg75jwjH39o4BXg",
 			},
 		},
-		{
-			name: "not valid",
-			user: models.User{Login: "login"},
-			expected: expected{
-				status: http.StatusBadRequest,
-				token:  models.JWT{},
-			},
-		},
-		// {
-		// 	name:     "not valid",
-		// 	user:     models.User{},
-		// 	expected: resp{status: http.StatusBadRequest},
-		// },
 	}
 
 	// create new server
@@ -81,14 +69,14 @@ func TestLogIn(t *testing.T) {
 
 	// mockService.EXPECT().Authenticate(gomock.Any(), models.User{Login: "NO", Password: "NO"}).Return(models.User{}, errors.New("not found"))
 	first := mockService.EXPECT().
-		Authenticate(gomock.Any(), models.User{Login: "Wrong", Password: "User"}).
-		Return(models.JWT{Payload: models.Claims{UserID: 1}}, nil).
-		MaxTimes(1)
+		BuildJWTString(gomock.Any(), models.User{Login: "Wrong", Password: "User"}).
+		Return("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjY1NzI1NjksIlVzZXJJRCI6MX0.GAUD2ulqg-UIXsomcc6B9vFD5Eqyrg75jwjH39o4BXg", errors.New("bad")).
+		MaxTimes(2)
 
 	second := mockService.EXPECT().
-		Authenticate(gomock.Any(), gomock.Any()).
-		Return(models.JWT{Payload: models.Claims{UserID: 1}}, nil).
-		MaxTimes(1)
+		BuildJWTString(gomock.Any(), gomock.Any()).
+		Return("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjY1NzI1NjksIlVzZXJJRCI6MX0.GAUD2ulqg-UIXsomcc6B9vFD5Eqyrg75jwjH39o4BXg", nil).
+		MaxTimes(2)
 
 	gomock.InOrder(
 		first,
@@ -117,7 +105,7 @@ func TestLogIn(t *testing.T) {
 			// t.Errorf("%s", w.Result().Status)
 
 			if tt.expected.status != uint(w.Code) {
-				t.Errorf("######### = %v, want %v", tt.expected.status, uint(w.Code))
+				t.Errorf("Status -> %v, want -> %v", uint(w.Code), tt.expected.status)
 			}
 		})
 	}

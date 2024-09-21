@@ -4,14 +4,18 @@ include .env
 
 APP_FILE=cmd/main.go
 
+docs:
+	swag init -g internal/gateway/http/http.go
+
+test: 
+	go test ./...
+	
 run:
 	go run $(APP_FILE)
 
 build:
 	go build -o bin/rb_auth $(APP_FILE)
 
-build_and_run: build
+start: docs test build
 	./bin/rb_auth
 
-test: 
-	go test ./...

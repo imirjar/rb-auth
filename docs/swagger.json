@@ -1,0 +1,49 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Simple JWT auth.",
+        "title": "RB_AUTH API",
+        "contact": {
+            "email": "support@redbeaver.ru"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/login": {
+            "post": {
+                "description": "Authentificate user by login and password and retrun JWT if ok",
+                "tags": [
+                    "JWT"
+                ],
+                "summary": "Get user JWT",
+                "responses": {
+                    "200": {
+                        "description": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjY1NzI1NjksIlVzZXJJRCI6MX0.GAUD2ulqg-UIXsomcc6B9vFD5Eqyrg75jwjH39o4BXg",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/signin": {
+            "post": {
+                "description": "Add new user login and password",
+                "tags": [
+                    "JWT"
+                ],
+                "summary": "Registrate new user",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

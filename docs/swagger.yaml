@@ -1,0 +1,32 @@
+basePath: /api/v1
+host: localhost:8080
+info:
+  contact:
+    email: support@redbeaver.ru
+  description: Simple JWT auth.
+  title: RB_AUTH API
+  version: "1.0"
+paths:
+  /login:
+    post:
+      description: Authentificate user by login and password and retrun JWT if ok
+      responses:
+        "200":
+          description: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjY1NzI1NjksIlVzZXJJRCI6MX0.GAUD2ulqg-UIXsomcc6B9vFD5Eqyrg75jwjH39o4BXg
+          schema:
+            type: string
+      summary: Get user JWT
+      tags:
+      - JWT
+  /signin:
+    post:
+      description: Add new user login and password
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+      summary: Registrate new user
+      tags:
+      - JWT
+swagger: "2.0"

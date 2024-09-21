@@ -35,19 +35,19 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 	return m.recorder
 }
 
-// Authenticate mocks base method.
-func (m *MockService) Authenticate(arg0 context.Context, arg1 models.User) (models.JWT, error) {
+// BuildJWTString mocks base method.
+func (m *MockService) BuildJWTString(arg0 context.Context, arg1 models.User) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Authenticate", arg0, arg1)
-	ret0, _ := ret[0].(models.JWT)
+	ret := m.ctrl.Call(m, "BuildJWTString", arg0, arg1)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Authenticate indicates an expected call of Authenticate.
-func (mr *MockServiceMockRecorder) Authenticate(arg0, arg1 interface{}) *gomock.Call {
+// BuildJWTString indicates an expected call of BuildJWTString.
+func (mr *MockServiceMockRecorder) BuildJWTString(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Authenticate", reflect.TypeOf((*MockService)(nil).Authenticate), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildJWTString", reflect.TypeOf((*MockService)(nil).BuildJWTString), arg0, arg1)
 }
 
 // Registrate mocks base method.

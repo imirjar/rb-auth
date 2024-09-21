@@ -3,7 +3,14 @@
 
 # About app
 
-Authentification server. Powered by reDBeaver
+.∧＿∧\
+( ･ω･｡)つ━☆・*。\
+⊂　 ノ 　　　・゜+.\
+しーＪ　　　°。+ *´¨)\
+　　　　　　　　　.· ´Authentification server.
+ Powered by reDBeaver¸.·*´¨) 
+
+
 
 ### Running app
 Install golang from page https://go.dev/doc/install
@@ -22,7 +29,7 @@ RB_AUTH app consists of 3 layers:
 1) memory - is a fake storage for developing mode only
 2) psql - postgresql database
 
-You can make your custom connection, witch realize internal/service/service.go -> "storage" interface
+You can make your custom connection, which realize internal/service/service.go -> "storage" interface
 
 ## Service 
 1) Authentificate - 
@@ -34,15 +41,47 @@ You can make your custom connection, witch realize internal/service/service.go -
 2) Log in
 3) Authenticate
 
-### 1. Gaterway tests
+# Test layers
 
-#### 1.1 Gateway service mock
-For good tests we are using mockgen util
+## Mocks
+
+#### 1 Gateway service mock
+Implement service interface
 
 ```bash 
 mockgen -destination=internal/gateway/http/mock_service.go -package=http github.com/imirjar/rb-auth/internal/gateway/http Service
 ```
-#### 1.2 Run tests
+
+#### 2 Service storage mock
+Implement storage interface
+
+```bash 
+mockgen -destination=internal/gateway/http/mock_service.go -package=http github.com/imirjar/rb-auth/internal/gateway/http Service
+```
+
+#### 3 Storage db mock
+Implement database functional
+
+```bash 
+mockgen -destination=internal/gateway/http/mock_service.go -package=http github.com/imirjar/rb-auth/internal/gateway/http Service
+```
+
+##  Run tests
 ```
 make test
+```
+
+# Documentation
+
+## Swagger
+
+### Install swagger
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest 
+```
+
+### Create swagger API doc
+
+```bash
+swag init -g internal/gateway/http/http.go
 ```

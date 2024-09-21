@@ -33,9 +33,11 @@ func (s *storage) GetUser(login string) (models.User, error) {
 	log.Println("STORAGE", s.Users)
 
 	if user, ok := s.Users[login]; !ok {
-		return user, nil
-	} else {
+		// log.Println("!ok", user)
 		return user, errFindUser
+	} else {
+		// log.Println("ok", user)
+		return user, nil
 	}
 
 }
