@@ -1,18 +1,50 @@
-basePath: /api/v1
+basePath: /
+definitions:
+  models.User:
+    properties:
+      login:
+        example: user
+        type: string
+      password:
+        example: password
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
     email: support@redbeaver.ru
   description: Simple JWT auth.
+  license:
+    name: GNU GPL
+    url: https://fsf.org/
   title: RB_AUTH API
   version: "1.0"
 paths:
   /login:
     post:
       description: Authentificate user by login and password and retrun JWT if ok
+      parameters:
+      - description: query params
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
       responses:
         "200":
-          description: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjY1NzI1NjksIlVzZXJJRCI6MX0.GAUD2ulqg-UIXsomcc6B9vFD5Eqyrg75jwjH39o4BXg
+          description: success
+          schema:
+            type: string
+        "400":
+          description: user isn't correct
+          schema:
+            type: string
+        "403":
+          description: user isn't valid
+          schema:
+            type: string
+        "500":
+          description: some error
           schema:
             type: string
       summary: Get user JWT
@@ -21,12 +53,87 @@ paths:
   /signin:
     post:
       description: Add new user login and password
+      parameters:
+      - description: query params
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
       responses:
         "200":
           description: success
           schema:
             type: string
+        "400":
+          description: user isn't correct
+          schema:
+            type: string
+        "500":
+          description: some error
+          schema:
+            type: string
       summary: Registrate new user
+      tags:
+      - JWT
+  /token/refresh:
+    post:
+      description: Send your JWT to prolongate your JWT expired period
+      parameters:
+      - description: query params
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: user isn't correct
+          schema:
+            type: string
+        "403":
+          description: user isn't valid
+          schema:
+            type: string
+        "500":
+          description: some error
+          schema:
+            type: string
+      summary: Refresh user JWT
+      tags:
+      - JWT
+  /token/validate:
+    post:
+      description: Authentificate user by login and password and retrun JWT if ok
+      parameters:
+      - description: query params
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: user isn't correct
+          schema:
+            type: string
+        "403":
+          description: user isn't valid
+          schema:
+            type: string
+        "500":
+          description: some error
+          schema:
+            type: string
+      summary: Validate user JWT
       tags:
       - JWT
 swagger: "2.0"

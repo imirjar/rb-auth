@@ -84,7 +84,7 @@ func TestLogIn(t *testing.T) {
 	)
 
 	// connect fake service with http server
-	srv.Service = mockService
+	srv.UserService = mockService
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

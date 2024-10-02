@@ -16,7 +16,7 @@
 Install golang from page https://go.dev/doc/install
 
 ```bash 
-make build_and_run
+make start
 ```
 
 # App layers:
@@ -37,11 +37,9 @@ You can make your custom connection, which realize internal/service/service.go -
 3) Registrate - register new User in system
 
 ## Gateway 
-1) Sign in
-2) Log in
-3) Authenticate
+You can read swagger api documentation for this layer
 
-# Test layers
+# Testing layers
 
 ## Mocks
 

@@ -3,7 +3,10 @@ package http
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi"
 	_ "github.com/imirjar/rb-auth/docs"
@@ -11,55 +14,79 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-type Service interface {
-	BuildJWTString(context.Context, models.User) (string, error)
-	Registrate(context.Context, models.User) error
+type UserService interface {
+	CheckUser(context.Context, models.User) (models.User, bool) //CheckUser
+	AddUser(context.Context, models.User) error                 //AddUser
+}
+
+type TokenService interface {
+	Create(context.Context, models.User) (string, error)
+	Refresh(context.Context, string) (string, error)
+	Validate(context.Context, string) bool
+}
+
+type SessionService interface {
+	CreateSession(context.Context, models.User, string)
+	DeleteSession(context.Context, string)
 }
 
 type HTTPServer struct {
-	Service Service
-	Server  *http.Server
+	UserService    UserService
+	TokenService   TokenService
+	SessionService SessionService
+	Server         *http.Server
 }
 
 // @Title RB_AUTH API
 // @Description Simple JWT auth.
 // @Version 1.0
 
+// @license.name  GNU GPL 3.0
+// @license.url   https://www.gnu.org/licenses/gpl-3.0.html#license-text
+
 // @Contact.email support@redbeaver.ru
 
-// @BasePath /api/v1
+// @BasePath /
 // @Host localhost:8080
-func New() (*HTTPServer, error) {
+func New(port string) (*HTTPServer, error) {
 	gtw := HTTPServer{}
 
 	router := chi.NewRouter()
 
-	router.Post("/login", gtw.LogIn())   // retrun JWT if ok
+	// Auth handlers
+	router.Post("/login", gtw.LogIn())   // retrun JWT if ok and create session
 	router.Post("/signin", gtw.SignIn()) // add user in system
+	router.Post("/logout", gtw.SignIn()) // delete session
 
+	// Manipulations with JWT
 	router.Route("/token", func(token chi.Router) {
-		token.Post("/refresh", gtw.Refresh()) // return new jwt with new lifetime
+		token.Post("/refresh", gtw.Refresh())   // return new jwt with new lifetime
+		token.Post("/validate", gtw.Validate()) // return new jwt with new lifetime
 	})
 
-	router.Route("/swagger", func(swagger chi.Router) {
-		swagger.Get("/*", httpSwagger.WrapHandler) // return new jwt with new lifetime
+	// RB_AUTH API SWAGGER
+	router.Route("/api", func(swagger chi.Router) {
+		swagger.Get("/v1/*", httpSwagger.WrapHandler) // return new jwt with new lifetime
 	})
 
 	gtw.Server = &http.Server{
 		Handler: router,
-		Addr:    ":8080",
+		Addr:    port,
 	}
+
+	fmt.Printf("App run on port %s", port)
 
 	return &gtw, nil
 }
 
-// HelloHandler пример обработчика
+// @Tags JWT
+// @Router /signin [post]
 // @Summary Registrate new user
 // @Description Add new user login and password
-// @Parameters sdf
-// @Tags JWT
+// @Param user body models.User true "query params"
 // @Success 200 {string} string "success"
-// @Router /signin [post]
+// @Failure 400  {string}  string    "user isn't correct"
+// @Failure 500  {string}  string    "some error"
 func (s *HTTPServer) SignIn() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -72,7 +99,7 @@ func (s *HTTPServer) SignIn() http.HandlerFunc {
 		}
 
 		// Trying to add new user into system
-		err = s.Service.Registrate(r.Context(), user)
+		err = s.UserService.AddUser(r.Context(), user)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -84,12 +111,15 @@ func (s *HTTPServer) SignIn() http.HandlerFunc {
 	}
 }
 
-// GoodbyeHandler пример обработчика
+// @Tags JWT
+// @Router /login [post]
 // @Summary Get user JWT
 // @Description Authentificate user by login and password and retrun JWT if ok
-// @Tags JWT
-// @Success 200 {string} string "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjY1NzI1NjksIlVzZXJJRCI6MX0.GAUD2ulqg-UIXsomcc6B9vFD5Eqyrg75jwjH39o4BXg"
-// @Router /login [post]
+// @Param user body models.User true "query params"
+// @Success 200 {string} string "success"
+// @Failure 400  {string}  string    "user isn't correct"
+// @Failure 403  {string}  string    "user isn't valid"
+// @Failure 500  {string}  string    "some error"
 func (s *HTTPServer) LogIn() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -102,12 +132,20 @@ func (s *HTTPServer) LogIn() http.HandlerFunc {
 			return
 		}
 
-		token, err := s.Service.BuildJWTString(r.Context(), user)
-		// if user isn't exist
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusForbidden)
+		user, ok := s.UserService.CheckUser(r.Context(), user)
+		if !ok {
+			http.Error(w, errUserIsNotExists.Error(), http.StatusForbidden)
 			return
 		}
+
+		token, err := s.TokenService.Create(r.Context(), user)
+		// if user isn't exist
+		if err != nil {
+			http.Error(w, errInvalidUser.Error(), http.StatusForbidden)
+			return
+		}
+
+		// CREATE SESSION
 
 		// response
 		if err = json.NewEncoder(w).Encode(token); err != nil {
@@ -118,11 +156,73 @@ func (s *HTTPServer) LogIn() http.HandlerFunc {
 	}
 }
 
-// Token:
-
-// Return new jwt with new lifetime
+// @Tags JWT
+// @Router /token/refresh [post]
+// @Summary Refresh user JWT
+// @Description Send your JWT to prolongate your JWT expired period
+// @Param user body models.User true "query params"
+// @Success 200 {string} string "success"
+// @Failure 400  {string}  string    "user isn't correct"
+// @Failure 403  {string}  string    "user isn't valid"
+// @Failure 500  {string}  string    "some error"
 func (s *HTTPServer) Refresh() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			http.Error(w, errMissingHeader.Error(), http.StatusUnauthorized)
+			return
+		}
 
+		// expected - "Bearer {token}"
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
+		isValid := s.TokenService.Validate(context.Background(), tokenString)
+		if !isValid {
+			http.Error(w, errInvalidToken.Error(), http.StatusForbidden)
+			return
+		}
+
+		prolongJWT, err := s.TokenService.Refresh(r.Context(), tokenString)
+		if authHeader == "" {
+			log.Println(err)
+			http.Error(w, errInternal.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(200)
+		w.Write([]byte(prolongJWT))
+
+	}
+}
+
+// @Tags JWT
+// @Router /token/validate [post]
+// @Summary Validate user JWT
+// @Description Authentificate user by login and password and retrun JWT if ok
+// @Param user body models.User true "query params"
+// @Success 200 {string} string "Token is vali"
+// @Failure 401  {string}  string    "Missing Authorization Header"
+// @Failure 403  {string}  string    "user isn't valid"
+// @Failure 500  {string}  string    "some error"
+func (s *HTTPServer) Validate() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			http.Error(w, errMissingHeader.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		// expected - "Bearer {token}"
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		// log.Print(tokenString)
+
+		isValid := s.TokenService.Validate(context.Background(), tokenString)
+		if !isValid {
+			http.Error(w, errInvalidToken.Error(), http.StatusForbidden)
+			return
+		}
+
+		w.WriteHeader(200)
+		w.Write([]byte("Token is valid"))
 	}
 }

@@ -12,6 +12,10 @@ const docTemplate = `{
         "contact": {
             "email": "support@redbeaver.ru"
         },
+        "license": {
+            "name": "GNU GPL",
+            "url": "https://fsf.org/"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -24,9 +28,38 @@ const docTemplate = `{
                     "JWT"
                 ],
                 "summary": "Get user JWT",
+                "parameters": [
+                    {
+                        "description": "query params",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjY1NzI1NjksIlVzZXJJRCI6MX0.GAUD2ulqg-UIXsomcc6B9vFD5Eqyrg75jwjH39o4BXg",
+                        "description": "success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "user isn't correct",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "user isn't valid",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "some error",
                         "schema": {
                             "type": "string"
                         }
@@ -41,13 +74,143 @@ const docTemplate = `{
                     "JWT"
                 ],
                 "summary": "Registrate new user",
+                "parameters": [
+                    {
+                        "description": "query params",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "success",
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    "400": {
+                        "description": "user isn't correct",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "some error",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
+                }
+            }
+        },
+        "/token/refresh": {
+            "post": {
+                "description": "Send your JWT to prolongate your JWT expired period",
+                "tags": [
+                    "JWT"
+                ],
+                "summary": "Refresh user JWT",
+                "parameters": [
+                    {
+                        "description": "query params",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "user isn't correct",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "user isn't valid",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "some error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/token/validate": {
+            "post": {
+                "description": "Authentificate user by login and password and retrun JWT if ok",
+                "tags": [
+                    "JWT"
+                ],
+                "summary": "Validate user JWT",
+                "parameters": [
+                    {
+                        "description": "query params",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "user isn't correct",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "user isn't valid",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "some error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "login": {
+                    "type": "string",
+                    "example": "user"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "password"
                 }
             }
         }
@@ -58,7 +221,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "RB_AUTH API",
 	Description:      "Simple JWT auth.",
