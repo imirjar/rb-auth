@@ -1,12 +1,12 @@
 package models
 
 type User struct {
-	ID       int      `json:"id,omitempty"`
-	Name     string   `json:"name,omitempty"`
-	Login    string   `json:"login"`
-	Password string   `json:"password"`
-	Roles    []*Role  `json:"roles,omitempty"`
-	Groups   []*Group `json:"groups,omitempty"`
+	ID       int      `json:"id,omitempty" swaggerignore:"true"`
+	Name     string   `json:"name,omitempty" swaggerignore:"true"`
+	Login    string   `json:"login" example:"user"`
+	Password string   `json:"password" example:"password"`
+	Roles    []*Role  `json:"roles,omitempty" swaggerignore:"true"`
+	Groups   []*Group `json:"groups,omitempty" swaggerignore:"true"`
 }
 
 func (u *User) IsValid() bool {

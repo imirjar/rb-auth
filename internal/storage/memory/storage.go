@@ -8,16 +8,18 @@ import (
 
 func New() (*storage, error) {
 	return &storage{
-		Users:  make(map[string]models.User),
-		Groups: make(map[string]models.Group),
-		Roles:  make(map[string]models.Role),
+		Users:    make(map[string]models.User),
+		Groups:   make(map[string]models.Group),
+		Roles:    make(map[string]models.Role),
+		Sessions: make(map[string]models.Session),
 	}, nil
 }
 
 type storage struct {
-	Users  map[string]models.User
-	Groups map[string]models.Group
-	Roles  map[string]models.Role
+	Users    map[string]models.User
+	Groups   map[string]models.Group
+	Roles    map[string]models.Role
+	Sessions map[string]models.Session
 }
 
 func (s *storage) AddUser(user models.User) error {

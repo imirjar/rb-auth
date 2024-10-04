@@ -1,5 +1,12 @@
 # configs
 .env
 
+# keys
+private_key.pem
+public_key.pem
+
 # binaries
 /bin
+
+# addition folders
+/cmd/keygen

@@ -1,4 +1,4 @@
-package service
+package user
 
 import (
 	"context"
@@ -18,34 +18,24 @@ type service struct {
 	Storage storage
 }
 
-// return JWT token
-func (s *service) BuildJWTString(ctx context.Context, user models.User) (string, error) {
+// return (user, true) is user is exists
+func (s *service) CheckUser(ctx context.Context, user models.User) (models.User, bool) {
 	if !user.IsValid() {
-		return "", errors.New("user isn't valid")
+		log.Println("CheckUser ERROR: user ISN'T VALID")
+		return user, false
+		// errors.New("user isn't valid")
 	}
 
 	user, err := s.Storage.GetUser(user.Login)
 	if err != nil {
-		log.Println("###", err)
-		return "", err
+		log.Println("GetUser ERROR:", err)
+		return user, false
 	}
 
-	jwt := models.JWT{
-		Payload: models.Claims{
-			User: user,
-		},
-	}
-
-	jwtstring, err := jwt.GetSignature()
-	if err != nil {
-		log.Print(err)
-		return "", err
-	}
-
-	return jwtstring, nil
+	return user, true
 }
 
-func (s *service) Registrate(ctx context.Context, user models.User) error {
+func (s *service) AddUser(ctx context.Context, user models.User) error {
 	if !user.IsValid() {
 		return errors.New("user isn't valid")
 	}
