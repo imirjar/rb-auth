@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/chi"
 	_ "github.com/imirjar/rb-auth/docs"
 	"github.com/imirjar/rb-auth/internal/models"
+	authmdw "github.com/imirjar/rb-glue/middlewares/authentication"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -206,15 +207,14 @@ func (s *HTTPServer) Refresh() http.HandlerFunc {
 // @Failure 500  {string}  string    "some error"
 func (s *HTTPServer) Validate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			http.Error(w, errMissingHeader.Error(), http.StatusUnauthorized)
 			return
 		}
 
-		// expected - "Bearer {token}"
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		// log.Print(tokenString)
 
 		isValid := s.TokenService.Validate(context.Background(), tokenString)
 		if !isValid {
@@ -222,7 +222,16 @@ func (s *HTTPServer) Validate() http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(200)
-		w.Write([]byte("Token is valid"))
+		validResp := authmdw.AuthServiceResponse{
+			Valid:  isValid,
+			User:   "user",
+			Roles:  []string{"role1"},
+			Groups: []string{},
+		}
+
+		if err := json.NewEncoder(w).Encode(validResp); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
