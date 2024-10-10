@@ -44,6 +44,28 @@ func (s *service) Refresh(ctx context.Context, token string) (string, error) {
 	return token, nil
 }
 
+func (s *service) Read(ctx context.Context, tokenString string) (models.User, error) {
+
+	claims := models.Claims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return s.PubKey, nil
+	})
+	if err != nil {
+		log.Print(err)
+		return claims.User, err
+	}
+
+	if !token.Valid {
+		return claims.User, fmt.Errorf("token is not Valid")
+	}
+
+	return claims.User, nil
+}
+
 func (s *service) Validate(ctx context.Context, tokenString string) bool {
 	token, err := jwt.ParseWithClaims(tokenString, &models.Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {

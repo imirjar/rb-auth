@@ -11,7 +11,6 @@ import (
 	"github.com/go-chi/chi"
 	_ "github.com/imirjar/rb-auth/docs"
 	"github.com/imirjar/rb-auth/internal/models"
-	authmdw "github.com/imirjar/rb-glue/middlewares/authentication"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -23,6 +22,7 @@ type UserService interface {
 type TokenService interface {
 	Create(context.Context, models.User) (string, error)
 	Refresh(context.Context, string) (string, error)
+	Read(context.Context, string) (models.User, error)
 	Validate(context.Context, string) bool
 }
 
@@ -216,20 +216,13 @@ func (s *HTTPServer) Validate() http.HandlerFunc {
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
-		isValid := s.TokenService.Validate(context.Background(), tokenString)
-		if !isValid {
+		user, err := s.TokenService.Read(context.Background(), tokenString)
+		if err != nil {
 			http.Error(w, errInvalidToken.Error(), http.StatusForbidden)
 			return
 		}
 
-		validResp := authmdw.AuthServiceResponse{
-			Valid:  isValid,
-			User:   "user",
-			Roles:  []string{"role1"},
-			Groups: []string{},
-		}
-
-		if err := json.NewEncoder(w).Encode(validResp); err != nil {
+		if err := json.NewEncoder(w).Encode(user); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
