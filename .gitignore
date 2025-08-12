@@ -1,0 +1,12 @@
+
+# configs
+.env
+
+# keys
+*.pem
+
+# binaries
+./bin
+
+# addition folders
+./cmd/keygen
