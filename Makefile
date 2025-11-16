@@ -1,39 +1,62 @@
-include .env
+# Define project variables
+PROJECT_NAME := rb-auth
+GO_FILES := $(shell find . -name '*.go' -print)
 
-.PHONY: run build test prod docker-build docker-run docker-clean
+# Default target: build the application
+.PHONY: all
+all: build
 
-
-APP_FILE=cmd/main.go
-
-docs:
-	swag init -g internal/gateway/http/http.go 
-
-test: 
-	go test ./...
-
-run:
-	go run $(APP_FILE)
-
+# Build target: compiles the Go application
+.PHONY: build
 build:
-	go build -o rb_auth $(APP_FILE)
+	go build -o ./bin/$(PROJECT_NAME) ./cmd/main.go
+# 	CGO_ENABLED=0 GOOS=linux go build -o bin/$(BIN_NAME) $(APP_FILE)
+# 	GOOS=linux GOARCH=amd64 go build -o $(BIN_NAME) $(APP_FILE)
 
-start: docs test build 
-	./bin/rb_auth
+# Test target: runs all unit tests
+.PHONY: test
+test:
+	go test -v ./...
 
-# Docker сборка
-docker-build: 
-	docker build -t rb_auth .
+# Clean target: removes compiled binaries and other artifacts
+.PHONY: clean
+clean:
+	rm -f ./bin/$(PROJECT_NAME)
+	go clean
 
+# Format target: formats Go source code using gofmt
+.PHONY: fmt
+fmt:
+	gofmt -w $(GO_FILES)
 
-# Запуск проекта в Docker контейнере с использованием .env файла
-docker-run: docker-build
-	docker run -d --name rb_auth -p 7070:7070 rb_auth
+# Lint target: runs golint for code style checks
+.PHONY: lint
+lint:
+	golint ./...
 
-# Очищение контейнера после остановки
-docker-clean:
-	@if [ "$(shell docker ps -a -q --filter "name=rb_auth")" ]; then \
-		docker rm rb_auth; \
-	fi
+# Vet target: runs go vet for static analysis
+.PHONY: vet
+vet:
+	go vet ./...
 
-# Полный цикл сборки и запуска в Docker
-prod: docker-clean docker-run
+# Install dependencies target
+.PHONY: deps
+deps:
+	go mod tidy
+	go mod download
+
+# Help target: displays available commands
+.PHONY: help
+help:
+	@echo "Usage: make <target>"
+	@echo ""
+	@echo "Targets:"
+	@echo "  all     - Builds the application (default)"
+	@echo "  build   - Compiles the Go application"
+	@echo "  test    - Runs all unit tests"
+	@echo "  clean   - Removes compiled binaries and other artifacts"
+	@echo "  fmt     - Formats Go source code"
+	@echo "  lint    - Runs golint for code style checks"
+	@echo "  vet     - Runs go vet for static analysis"
+	@echo "  deps    - Installs Go module dependencies"
+	@echo "  help    - Displays this help message"
