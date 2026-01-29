@@ -4,40 +4,32 @@ import (
 	"log"
 
 	"github.com/imirjar/rb-auth/config"
-	gateway "github.com/imirjar/rb-auth/internal/gateway/http"
-	tokenService "github.com/imirjar/rb-auth/internal/service/token"
-	userService "github.com/imirjar/rb-auth/internal/service/user"
-	storage "github.com/imirjar/rb-auth/internal/storage/memory"
+	gateway "github.com/imirjar/rb-auth/internal/app/gateway/http"
+	service "github.com/imirjar/rb-auth/internal/service"
+	storage "github.com/imirjar/rb-auth/internal/storage"
 )
 
 func Run() error {
 	config := config.New()
 	// log.Print(config)
 
-	storage, err := storage.New()
+	storage, err := storage.New(config.DBConn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer storage.Close()
+
+	service, err := service.New(config.Secret)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	userService, err := userService.New()
+	gw, err := gateway.New(config.Port)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// log.Print(config.Security.Pub.Key)
-	tokenService, err := tokenService.New(config.Security.Priv.Key, config.Security.Pub.Key)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	gw, err := gateway.New(config.Http.Port)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	userService.Storage = storage
-	// tokenService.Storage = storage
-	gw.UserService = userService
-	gw.TokenService = tokenService
+	service.Storage = storage
+	gw.Service = *service
 	return gw.Server.ListenAndServe()
 }
