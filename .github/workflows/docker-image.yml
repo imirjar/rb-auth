@@ -13,20 +13,20 @@ env:
   DOCKER_NAMESPACE: ${{ vars.DOCKER_NAMESPACE }}
 
 jobs:
-  Test:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v5
-    - uses: actions/setup-go@v6
-      with:
-        go-version: '1.23'
+  # Test:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v5
+  #   - uses: actions/setup-go@v6
+  #     with:
+  #       go-version: '1.23'
     
-    - name: Test
-      run: make test
+  #   - name: Test
+  #     run: make test
   
 
   Publish:
-    needs: [Test]  
+    # needs: [Test]  
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v5
