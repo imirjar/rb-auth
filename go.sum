@@ -43,6 +43,8 @@ github.com/golang-jwt/jwt/v5 v5.3.0/go.mod h1:fxCRLWMO43lRc8nhHWY6LGqRcf+1gQWArs
 github.com/golang/mock v1.6.0 h1:ErTB+efbowRARo13NNdxyJji2egdxLGQhRaY+DUumQc=
 github.com/golang/mock v1.6.0/go.mod h1:p6yTPP+5HYm5mzsMV8JkE6ZKdX+/wYM6Hr+LicevLPs=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
+github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
+github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
 github.com/imirjar/rb-glue v0.0.1 h1:ekZatSSM2kVfXCr4JbXvqwrMRjF47z1EZwZlWVlK0vw=
 github.com/imirjar/rb-glue v0.0.1/go.mod h1:ToroTxQm23jMmd9Y0wzjAKYAdGwewyBA3YdBaiS2+SQ=
 github.com/imirjar/rb-glue v0.0.4 h1:GAPJLy49FAXtvBM+DQayoXxQbvhYWXrFT/cExMBzGTw=

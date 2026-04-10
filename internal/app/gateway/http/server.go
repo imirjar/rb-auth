@@ -1,19 +1,19 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"time"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/cors"
+	"github.com/gorilla/mux"
 	_ "github.com/imirjar/rb-auth/docs"
-	"github.com/imirjar/rb-auth/internal/service"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-type HTTPServer struct {
-	Service service.Service
-	Server  *http.Server
+type HttpServer struct {
+	Service Service
+	Port    string
 }
 
 // @Title RB_AUTH API
@@ -27,43 +27,49 @@ type HTTPServer struct {
 
 // @BasePath /
 // @Host localhost:8080
-func New(port string) (*HTTPServer, error) {
-	gtw := HTTPServer{}
 
-	router := chi.NewRouter()
+func New(ctx context.Context, port string) *HttpServer {
+	return &HttpServer{
+		Port: port,
+	}
+}
+func (srv *HttpServer) Run(ctx context.Context) error {
 
-	router.Use(cors.Handler(cors.Options{
-		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
-		AllowedOrigins: []string{"*"},
-		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: false,
-		MaxAge:           300, // Maximum value not ignored by any of major browsers
-	}))
+	router := mux.NewRouter()
 
 	// Auth handlers
-	router.Post("/login", gtw.LogIn())   // retrun JWT if ok and create session
-	router.Post("/signin", gtw.SignIn()) // retrun JWT if ok and create user
+	auth := router.PathPrefix("/auth").Subrouter()
+	auth.Handle("/validate", srv.authHandler(ctx)).Methods("POST")
 
-	// Manipulations with JWT
-	router.Route("/token", func(token chi.Router) {
-		token.Post("/refresh", gtw.Refresh())
-		token.Post("/validate", gtw.Validate()) // return true if jwt if valid
-	})
+	user := router.PathPrefix("/users").Subrouter()
+	user.Handle("/{id}", srv.userHandler(ctx)).Methods("POST")
+	user.Handle("/", srv.usersHandler(ctx)).Methods("POST", "GET")
 
 	// RB_AUTH API SWAGGER
-	router.Route("/api", func(swagger chi.Router) {
-		swagger.Get("/v1/*", httpSwagger.WrapHandler)
-	})
+	router.Handle("/swagger/", httpSwagger.Handler()).Methods("GET")
+	router.Handle("/health", srv.healthHandler(ctx)).Methods("GET")
 
-	gtw.Server = &http.Server{
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%s", srv.Port),
 		Handler: router,
-		Addr:    fmt.Sprintf(":%s", port),
 	}
 
-	fmt.Printf("App run on port %s", gtw.Server.Addr)
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			panic(err)
+		}
+	}()
 
-	return &gtw, nil
+	// Wait for shutdown signal
+	<-ctx.Done()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return server.Shutdown(shutdownCtx)
+}
+
+func (srv *HttpServer) healthHandler(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+	}
 }

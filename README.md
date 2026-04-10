@@ -13,3 +13,7 @@
 ```bash
 PORT=6060 DB_CONN=postgresql://user:password@localhost:port/database go run ./cmd/main.go
 ```
+
+```bash
+docker build --tag ghcr.io/imirjar/rb_auth_image:latest .
+```

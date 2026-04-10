@@ -5,9 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/imirjar/rb-auth/internal/domain/entities"
-	domain "github.com/imirjar/rb-auth/internal/domain/entities"
-	"github.com/imirjar/rb-auth/internal/domain/models"
+	"github.com/imirjar/rb-auth/internal/domain"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -30,7 +28,7 @@ func New(secret string) (*Service, error) {
 	}, nil
 }
 
-func (s *Service) SignIn(ctx context.Context, req domain.SigninRequest) error {
+func (s *Service) CreateUser(ctx context.Context, req domain.User) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err

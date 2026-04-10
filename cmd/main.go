@@ -1,13 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/imirjar/rb-auth/internal/app"
 )
 
 func main() {
-	if err := app.Run(); err != nil {
+	ctx := context.Background()
+	if err := app.Run(ctx); err != nil {
 		fmt.Println(err)
 	}
 }

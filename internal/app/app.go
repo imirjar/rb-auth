@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"log"
 
 	"github.com/imirjar/rb-auth/config"
@@ -9,7 +10,7 @@ import (
 	storage "github.com/imirjar/rb-auth/internal/storage"
 )
 
-func Run() error {
+func Run(ctx context.Context) error {
 	config := config.New()
 	// log.Print(config)
 
@@ -24,7 +25,7 @@ func Run() error {
 		log.Fatal(err)
 	}
 
-	gw, err := gateway.New(config.Port)
+	gw, err := gateway.New(ctx, config.Port)
 	if err != nil {
 		log.Fatal(err)
 	}

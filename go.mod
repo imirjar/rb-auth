@@ -22,6 +22,7 @@ require (
 	github.com/go-openapi/spec v0.20.6 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
+	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/imirjar/rb-glue v0.0.4 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
